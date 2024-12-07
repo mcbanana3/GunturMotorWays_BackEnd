@@ -31,14 +31,30 @@ try {
 app.use("/bike", bikeRoute);
 app.use("/user", userRoute);
 
-if(process.env.NODE_ENV === 'production'){
-    const dirpath = path.resolve();
-    app.use(express.static("Frontend/dist"));
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(dirpath, "Frontend", "dist", "index.html"));
-    });
-}
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
+// API routes
+app.use("/api", (req, res) => {
+    // Add your API routes here
+});
+
+// Catch-all route: serve index.html for all requests
+app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
+});
+
+const server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
+server.on('error', (error) => {
+    console.error(`Express Error ${error.message}`);
+});
+
+process.on('SIGINT', () => {
+    server.close(() => {
+        console.log('Process terminated');
+        process.exit(0);
+    });
 });
